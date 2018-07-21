@@ -10,9 +10,10 @@ class BookingModel extends Object with _$BookingModelSerializerMixin {
   int userId;
   String description;
   int id;
+  int crId;
 
   BookingModel(this.id, this.startTime, this.endTime, this.name, this.userId,
-      this.description);
+      this.description,this.crId);
 
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
       _$BookingModelFromJson(json);

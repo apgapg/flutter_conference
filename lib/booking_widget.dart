@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_conference/data/booking_model.dart';
+import 'package:flutter_conference/utils/date_utils.dart';
 
 class BookingWidget extends StatelessWidget {
   final BookingModel bookingModel;
@@ -31,7 +32,7 @@ class BookingWidget extends StatelessWidget {
           Row(
             children: <Widget>[
               Text(
-                "11:00 - 12:00 AM",
+               getTime(),
                 style: new TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.w600,
@@ -73,5 +74,9 @@ class BookingWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String getTime() {
+    return DateUtils.formatTime(bookingModel.startTime)+" - "+DateUtils.formatTime(bookingModel.endTime);
   }
 }

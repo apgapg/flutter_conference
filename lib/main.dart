@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_conference/bloc.dart';
-import 'package:flutter_conference/booking_widget.dart';
-import 'package:flutter_conference/header_widget.dart';
+import 'package:flutter_conference/booking_dialog_widget.dart';
+import 'package:flutter_conference/booking_page.dart';
 import 'package:flutter_conference/utils/date_utils.dart';
 import 'package:flutter_conference/view_model.dart';
 
@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Provider(
       child: new MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'FieldAssist',
         theme: new ThemeData(
           // This is the theme of your application.
@@ -56,18 +57,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Widget> list;
 
+  String startTime = "StartTime";
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
-  /*  list = new List();
+    /*  list = new List();
     list.add(new HeaderWidget());
     list.add(new BookingWidget());
     list.add(new BookingWidget());
     list.add(new HeaderWidget());
     list.add(new BookingWidget());*/
-
   }
 
   @override
@@ -81,88 +83,116 @@ class _MyHomePageState extends State<MyHomePage> {
     _bloc = Provider.of(context);
     _bloc.initData();
     return new Scaffold(
-        appBar: new AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: new Text(widget.title),
-        ),
-        body: new Container(
-          child: new Column(
-            children: <Widget>[
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    margin: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                    padding: const EdgeInsets.only(left: 12.0, right: 12.0),
-                    decoration: new BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: new BorderRadius.circular(4.0),
-                      boxShadow: <BoxShadow>[
-                        new BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10.0,
-                          offset: new Offset(0.0, 4.0),
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Icon(
-                            Icons.date_range,
-                            size: 26.0,
-                            color: Colors.blue[500],
-                          ),
+      appBar: new AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: new Text(widget.title),
+      ),
+      body: new Container(
+        child: new Column(
+          children: <Widget>[
+            new Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                  padding: const EdgeInsets.only(left: 12.0, right: 12.0),
+                  decoration: new BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: new BorderRadius.circular(4.0),
+                    boxShadow: <BoxShadow>[
+                      new BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 10.0,
+                        offset: new Offset(0.0, 4.0),
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Icon(
+                          Icons.date_range,
+                          size: 26.0,
+                          color: Colors.blue[500],
                         ),
-                        GestureDetector(
-                          child: StreamBuilder(
-                            builder: (BuildContext context,
-                                AsyncSnapshot<DateTime> snapshot) {
-                              return Text(
-                                snapshot.hasData
-                                    ? DateUtils.format(snapshot.data)
-                                    : "NA",
-                                style: new TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.blueGrey[900],
-                                ),
-                              );
-                            },
-                            initialData: new DateTime.now(),
-                            stream: _bloc.date,
-                          ),
-                          onTap: () {
-                            _selectDate();
+                      ),
+                      GestureDetector(
+                        child: StreamBuilder(
+                          builder: (BuildContext context,
+                              AsyncSnapshot<DateTime> snapshot) {
+                            return Text(
+                              snapshot.hasData
+                                  ? DateUtils.formatDate(snapshot.data)
+                                  : "NA",
+                              style: new TextStyle(
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blueGrey[900],
+                              ),
+                            );
                           },
+                          initialData: new DateTime.now(),
+                          stream: _bloc.date,
                         ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    height: 48.0,
-                  )
-                ],
+                        onTap: () {
+                          _selectDate();
+                        },
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  height: 48.0,
+                )
+              ],
+            ),
+            Expanded(
+              child: new StreamBuilder(
+                builder: (context, snapshot) {
+                  return new ListView(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    children: snapshot.hasData ? snapshot.data : [new Text("")],
+                  );
+                },
+                stream: _bloc.list,
               ),
-              Expanded(
-                child: new StreamBuilder(
-                  builder: (context, snapshot) {
-                    return new ListView(
-                      children: snapshot.hasData?snapshot.data:[new Text("")],
-                    );
-                  },
-                  stream: _bloc.list,
-                ),
-              )
+            )
+          ],
+        ),
+      ),
+      bottomNavigationBar: GestureDetector(
+        onTap: () {
+          //showBookingDialog();
+          showBookingPage();
+        },
+        child: new Container(
+          height: 44.0,
+          alignment: Alignment.center,
+          decoration: new BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.rectangle,
+            borderRadius: new BorderRadius.circular(4.0),
+            boxShadow: <BoxShadow>[
+              new BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10.0,
+                offset: new Offset(0.0, 0.0),
+              ),
             ],
           ),
-        )
+          child: new Text(
+            "BOOK YOUR SLOT",
+            style: new TextStyle(
+                color: Colors.blue[500], fontWeight: FontWeight.w700),
+          ),
+        ),
+      ),
 
-        // This trailing comma makes auto-formatting nicer for build methods.
-        );
+      // This trailing comma makes auto-formatting nicer for build methods.
+    );
   }
 
   Future _selectDate() async {
@@ -175,4 +205,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (datetime != null) _bloc.dateSink(datetime);
   }
+
+  void showBookingDialog() {
+    showDialog(
+      context: context,
+      child: new BookingDialogWidget(),
+    );
+  }
+
+  void showBookingPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => BookingPage()),
+    );
+  }
+
 }
