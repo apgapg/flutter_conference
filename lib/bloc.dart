@@ -7,17 +7,20 @@ import 'package:flutter_conference/data/CR_model.dart';
 import 'package:flutter_conference/data/booking_model.dart';
 import 'package:flutter_conference/data/slot_booking.dart';
 import 'package:flutter_conference/header_widget.dart';
+import 'package:flutter_conference/utils/date_utils.dart';
 import 'package:flutter_conference/utils/network_utils.dart';
-import 'package:flutter_conference/widget/header_grid_view.dart';
 import 'package:http/http.dart' as http;
 
 class Bloc {
   StreamController<DateTime> _dateController = new StreamController.broadcast();
   StreamController<List<Widget>> _listController =
       new StreamController.broadcast();
-  StreamController<Map<CRModel, List<SlotBooking>>> _slotListController = new StreamController.broadcast();
+  StreamController<Map<CRModel, List<SlotBooking>>> _slotListController =
+  new StreamController.broadcast();
 
   List<CRModel> crDataList;
+
+  String _selectedDate;
 
   Stream<DateTime> get date => _dateController.stream;
 
@@ -34,13 +37,21 @@ class Bloc {
       _slotListController.sink.add;
 
   Bloc() {
+    _selectedDate = DateUtils.formatDate(DateTime.now());
+
     _dateController.stream.listen((date) {
+      _selectedDate = DateUtils.formatDate(date);
       initData();
     });
   }
 
   Future initData() async {
-    var response = await http.get("https://www.reweyou.in/test/test1.php");
+    Map<String, String> map = new Map();
+    map.putIfAbsent("date", () => _selectedDate);
+
+    print(_selectedDate);
+    var response = await http
+        .post("https://www.reweyou.in/booking/fetchbooking.php", body: map);
     if (NetworkUtils.isReqSuccess(response: response)) {
       List<Widget> _dataList = new List();
       Map<String, dynamic> map = json.decode(response.body);
@@ -57,9 +68,12 @@ class Bloc {
         crDataList.add(CRModel.fromJson(item));
       });
 
-      Map<String, dynamic> map1 = map['slots'];
-      map1.forEach((String room, value) {
-        int crId = int.parse(room);
+      List list = map['slots'];
+      List<BookingModel> _slotList = new List();
+      list.forEach((item) {
+        _slotList.add(new BookingModel.fromJson(item));
+
+        /*   int crId = int.parse(room);
 
         crDataList.forEach((crModel) {
           if (crModel.crId == crId)
@@ -67,8 +81,22 @@ class Bloc {
         });
         value.forEach((item) {
           _dataList.add(new BookingWidget(new BookingModel.fromJson(item)));
-        });
+        });*/
       });
+
+      if (_slotList.isNotEmpty)
+        for (int i = 0; i < crDataList.length; i++) {
+          for (int j = 0; j < _slotList.length; j++) {
+            if (j == 0) _dataList.add(new HeaderWidget(crDataList[i].name));
+
+            if (_slotList[j].roomId == crDataList[i].crId) {
+              _dataList.add(new BookingWidget(_slotList[j]));
+            }
+          }
+
+          if (_dataList.elementAt(_dataList.length - 1) is HeaderWidget)
+            _dataList.removeLast();
+        }
 
       listSink(_dataList);
     }
@@ -107,8 +135,6 @@ class Bloc {
       slotListSink(_dataList);
     }
   }
-
-
 
   Widget getHeader(String name) {
     return new SliverList(

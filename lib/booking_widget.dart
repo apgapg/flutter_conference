@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_conference/data/booking_model.dart';
-import 'package:flutter_conference/utils/date_utils.dart';
 
 class BookingWidget extends StatelessWidget {
   final BookingModel bookingModel;
@@ -32,7 +31,7 @@ class BookingWidget extends StatelessWidget {
           Row(
             children: <Widget>[
               Text(
-               getTime(),
+                bookingModel.slot,
                 style: new TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.w600,
@@ -42,7 +41,7 @@ class BookingWidget extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 8.0, bottom: 2.0),
+            padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
             child: Row(
               children: <Widget>[
                 Padding(
@@ -67,16 +66,14 @@ class BookingWidget extends StatelessWidget {
             //"For the discussion with startv and efl client. They are coming tomorrow",
             bookingModel.description,
             style: new TextStyle(
-                fontSize: 14.0,
+                fontSize: 16.0,
                 fontWeight: FontWeight.w600,
-                color: Colors.blue[500]),
+                color: Colors.grey[700]),
           )
         ],
       ),
     );
   }
 
-  String getTime() {
-    return DateUtils.formatTime(bookingModel.startTime)+" - "+DateUtils.formatTime(bookingModel.endTime);
-  }
+
 }

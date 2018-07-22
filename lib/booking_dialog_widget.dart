@@ -1,4 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_conference/utils/network_utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookingDialogWidget extends StatefulWidget {
   List<int> selectedSlotList;
@@ -10,8 +16,10 @@ class BookingDialogWidget extends StatefulWidget {
 
   String selectedRoomName;
 
-  BookingDialogWidget(
-      this.starttext, this.endtext, this.selectedSlotList, this.selectedRoomId, this.selectedRoomName);
+  String selectedTextDate;
+
+  BookingDialogWidget(this.starttext, this.endtext, this.selectedSlotList,
+      this.selectedRoomId, this.selectedRoomName, this.selectedTextDate);
 
   @override
   State<StatefulWidget> createState() {
@@ -20,6 +28,19 @@ class BookingDialogWidget extends StatefulWidget {
 }
 
 class MyState extends State<BookingDialogWidget> {
+  String _text;
+
+  String _username = "";
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    getUsername();
+  }
+
   @override
   Widget build(BuildContext context) {
     return new AlertDialog(
@@ -75,7 +96,7 @@ class MyState extends State<BookingDialogWidget> {
                       alignment: Alignment.center,
                       color: Colors.grey[300],
                       child: new Text(
-                        "Ayush P Gupta",
+                        _username,
                         style: new TextStyle(
                             fontWeight: FontWeight.w500, fontSize: 16.0),
                       ),
@@ -99,6 +120,9 @@ class MyState extends State<BookingDialogWidget> {
                     Container(
                         margin: const EdgeInsets.only(top: 12.0),
                         child: new TextField(
+                          onChanged: (text) {
+                            _text = text;
+                          },
                           maxLines: 8,
                           decoration: new InputDecoration(
                               border: new OutlineInputBorder()),
@@ -128,7 +152,9 @@ class MyState extends State<BookingDialogWidget> {
                     GestureDetector(
                         onTap: () {},
                         child: new FlatButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              uploadBooking();
+                            },
                             child: new Text(
                               "BOOK",
                               style: new TextStyle(
@@ -141,5 +167,31 @@ class MyState extends State<BookingDialogWidget> {
             ],
           ),
         ));
+  }
+
+  Future uploadBooking() async {
+    Map<String, String> map = new Map();
+    map.putIfAbsent("uid", () => _username);
+    map.putIfAbsent("description", () => _text);
+    map.putIfAbsent("date", () => widget.selectedTextDate);
+    map.putIfAbsent("name", () => "Ayush P Gupta");
+    map.putIfAbsent("slot", () => widget.starttext + " - " + widget.endtext);
+    map.putIfAbsent("slotId", () => json.encode(widget.selectedSlotList));
+    map.putIfAbsent("roomId", () => widget.selectedRoomId.toString());
+    var response = await http.post(
+        "https://www.reweyou.in/booking/addbooking.php", body: map);
+    if (NetworkUtils.isReqSuccess(response: response)) {
+      Navigator.popUntil(context, (route) => route.isFirst);
+    } else {
+      print(response.statusCode);
+    }
+  }
+
+  Future getUsername() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    setState(() {
+      _username = sharedPreferences.getString("username");
+    });
   }
 }

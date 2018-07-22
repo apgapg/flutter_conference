@@ -11,6 +11,10 @@ import 'package:flutter_conference/widget/header_grid_view.dart';
 import 'package:http/http.dart' as http;
 
 class BookingPage extends StatefulWidget {
+  String selectedTextDate;
+
+  BookingPage(this.selectedTextDate);
+
   @override
   State<StatefulWidget> createState() {
     return new MyState();
@@ -96,7 +100,8 @@ class MyState extends State<BookingPage> {
                         endtext,
                         _selectedSlotListId,
                         selectedRoomId,
-                        selectedRoomName
+                          selectedRoomName,
+                          widget.selectedTextDate
                       ));
                 }
               },
@@ -147,7 +152,8 @@ class MyState extends State<BookingPage> {
 
   List<Widget> getRooms(List<CRModel> roomlist) {
     List<Widget> _list = new List();
-
+    selectedRoomId = roomlist[selectedRoomIndex].crId;
+    selectedRoomName = roomlist[selectedRoomIndex].name;
     roomlist.forEach((model) {
       _list.add(Padding(
         padding: const EdgeInsets.all(4.0),
@@ -158,6 +164,7 @@ class MyState extends State<BookingPage> {
                 selectedRoomId = model.crId;
                 selectedRoomName = model.name;
                 _selectedSlotListId.clear();
+                return;
               });
             },
             child: Chip(
@@ -169,8 +176,6 @@ class MyState extends State<BookingPage> {
       ));
     });
 
-    selectedRoomId = roomlist[0].crId;
-    selectedRoomName = roomlist[0].name;
 
     return _list;
   }

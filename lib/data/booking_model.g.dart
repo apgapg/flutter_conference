@@ -9,29 +9,31 @@ part of 'booking_model.dart';
 BookingModel _$BookingModelFromJson(Map<String, dynamic> json) {
   return new BookingModel(
       json['id'] as int,
-      json['startTime'] as int,
-      json['endTime'] as int,
+      json['slot'] as String,
       json['name'] as String,
       json['userId'] as int,
       json['description'] as String,
-      json['crId'] as int);
+      json['roomId'] as int,
+      json['uid'] as int);
 }
 
 abstract class _$BookingModelSerializerMixin {
-  int get startTime;
-  int get endTime;
+  String get slot;
   String get name;
   int get userId;
   String get description;
   int get id;
-  int get crId;
+
+  int get uid;
+
+  int get roomId;
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'startTime': startTime,
-        'endTime': endTime,
+    'slot': slot,
         'name': name,
         'userId': userId,
         'description': description,
         'id': id,
-        'crId': crId
+    'uid': uid,
+    'roomId': roomId
       };
 }

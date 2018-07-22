@@ -4,16 +4,16 @@ part 'booking_model.g.dart';
 
 @JsonSerializable()
 class BookingModel extends Object with _$BookingModelSerializerMixin {
-  int startTime;
-  int endTime;
+  String slot;
   String name;
   int userId;
   String description;
   int id;
-  int crId;
+  int uid;
+  int roomId;
 
-  BookingModel(this.id, this.startTime, this.endTime, this.name, this.userId,
-      this.description,this.crId);
+  BookingModel(this.id, this.slot, this.name, this.userId,
+      this.description, this.roomId, this.uid);
 
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
       _$BookingModelFromJson(json);
