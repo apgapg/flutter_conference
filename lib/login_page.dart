@@ -41,7 +41,7 @@ class MyState extends State<LoginPage> {
                 textAlign: TextAlign.center,
                 style: new TextStyle(
                     fontSize: 18.0,
-                    color: Colors.blue,
+                    color: Colors.grey[800],
                     fontWeight: FontWeight.bold),
               ),
             ),
@@ -78,8 +78,11 @@ class MyState extends State<LoginPage> {
                   style: new TextStyle(
                       color: _buttonEnabled ? Colors.blue : Colors.grey[700]),
                 ),
+
               ),
-            )
+            ),
+            Padding(padding: const EdgeInsets.only(top: 16.0),
+              child: new Text("(Developed by: Ayush P Gupta)", style: new TextStyle(fontSize: 12.0, color: Colors.grey[700]),),)
           ],
         ),
       ),
@@ -90,11 +93,11 @@ class MyState extends State<LoginPage> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
     sharedPreferences.setBool("login", true);
-    sharedPreferences.setString("username", _text);
+    sharedPreferences.setString("username", _text.trim());
 
-    Navigator.push(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => HomePage()),
-    );
+            (route) => false);
   }
 }

@@ -29,6 +29,8 @@ class _MyHomePageState extends State<HomePage> {
 
   String _selectedTextDate;
 
+  bool _shouldBook = true;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -124,10 +126,24 @@ class _MyHomePageState extends State<HomePage> {
             Expanded(
               child: new StreamBuilder(
                 builder: (context, snapshot) {
-                  return new ListView(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    children: snapshot.hasData ? snapshot.data : [new Text("")],
-                  );
+                  if (snapshot.hasData) {
+                    if (snapshot.data.length == 0) {
+                      return new Center(
+                        child: new Text(
+                          "No bookings on this date yet",
+                          style: new TextStyle(
+                              fontSize: 18.0, color: Colors.grey[600]),
+                        ),
+                      );
+                    } else
+                      return new ListView(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        children: snapshot.data,
+                      );
+                  } else
+                    return new Center(
+                      child: new CircularProgressIndicator(),
+                    );
                 },
                 stream: _bloc.list,
               ),
@@ -138,7 +154,14 @@ class _MyHomePageState extends State<HomePage> {
       bottomNavigationBar: GestureDetector(
         onTap: () {
           //showBookingDialog();
-          showBookingPage();
+          if (_shouldBook)
+            showBookingPage();
+          else {
+            /*  Scaffold.of(context).showSnackBar(new SnackBar(
+                  content: new Text("Please select a valid date"),
+                  duration: new Duration(seconds: 1),
+                ));*/
+          }
         },
         child: new Container(
           height: 44.0,
@@ -171,11 +194,19 @@ class _MyHomePageState extends State<HomePage> {
     DateTime datetime = await showDatePicker(
       context: context,
       initialDate: new DateTime.now(),
-      firstDate: new DateTime.now().subtract(new Duration(days: 30)),
-      lastDate: new DateTime.now().add(new Duration(days: 30)),
+      firstDate: new DateTime.now().subtract(new Duration(days: 7)),
+      lastDate: new DateTime.now().add(new Duration(days: 15)),
     );
 
-    if (datetime != null) _bloc.dateSink(datetime);
+    if (datetime != null) {
+      if (datetime.day < (DateTime
+          .now()
+          .day)) {
+        _shouldBook = false;
+      } else
+        _shouldBook = true;
+      _bloc.dateSink(datetime);
+    }
   }
 
   void showBookingDialog() {}

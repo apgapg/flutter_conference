@@ -14,7 +14,9 @@ BookingModel _$BookingModelFromJson(Map<String, dynamic> json) {
       json['userId'] as int,
       json['description'] as String,
       json['roomId'] as int,
-      json['uid'] as int);
+      json['uid'] as int,
+      json['slotId'] as String,
+      json['date'] as String);
 }
 
 abstract class _$BookingModelSerializerMixin {
@@ -23,10 +25,12 @@ abstract class _$BookingModelSerializerMixin {
   int get userId;
   String get description;
   int get id;
-
   int get uid;
-
   int get roomId;
+
+  String get slotId;
+
+  String get date;
   Map<String, dynamic> toJson() => <String, dynamic>{
     'slot': slot,
         'name': name,
@@ -34,6 +38,8 @@ abstract class _$BookingModelSerializerMixin {
         'description': description,
         'id': id,
     'uid': uid,
-    'roomId': roomId
+    'roomId': roomId,
+    'slotId': slotId,
+    'date': date
       };
 }

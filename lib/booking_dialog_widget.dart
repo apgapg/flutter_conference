@@ -32,7 +32,6 @@ class MyState extends State<BookingDialogWidget> {
 
   String _username = "";
 
-
   @override
   void initState() {
     // TODO: implement initState
@@ -149,18 +148,17 @@ class MyState extends State<BookingDialogWidget> {
                                   fontWeight: FontWeight.w500,
                                   color: Colors.grey[600]),
                             ))),
-                    GestureDetector(
-                        onTap: () {},
-                        child: new FlatButton(
-                            onPressed: () {
-                              uploadBooking();
-                            },
-                            child: new Text(
-                              "BOOK",
-                              style: new TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.blue),
-                            ))),
+                    new FlatButton(
+                        onPressed: () {
+                          if (_text.isNotEmpty)
+                            uploadBooking();
+                        },
+                        child: new Text(
+                          "BOOK",
+                          style: new TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue),
+                        )),
                   ],
                 ),
               ),
@@ -174,12 +172,12 @@ class MyState extends State<BookingDialogWidget> {
     map.putIfAbsent("uid", () => _username);
     map.putIfAbsent("description", () => _text);
     map.putIfAbsent("date", () => widget.selectedTextDate);
-    map.putIfAbsent("name", () => "Ayush P Gupta");
+    map.putIfAbsent("name", () => _username);
     map.putIfAbsent("slot", () => widget.starttext + " - " + widget.endtext);
     map.putIfAbsent("slotId", () => json.encode(widget.selectedSlotList));
     map.putIfAbsent("roomId", () => widget.selectedRoomId.toString());
-    var response = await http.post(
-        "https://www.reweyou.in/booking/addbooking.php", body: map);
+    var response = await http
+        .post("https://www.reweyou.in/booking/addbooking.php", body: map);
     if (NetworkUtils.isReqSuccess(response: response)) {
       Navigator.popUntil(context, (route) => route.isFirst);
     } else {

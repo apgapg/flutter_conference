@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_conference/bloc.dart';
 import 'package:flutter_conference/booking_dialog_widget.dart';
 import 'package:flutter_conference/data/CR_model.dart';
+import 'package:flutter_conference/data/filled_model.dart';
 import 'package:flutter_conference/data/slot_booking.dart';
 import 'package:flutter_conference/utils/network_utils.dart';
+import 'package:flutter_conference/view_model.dart';
 import 'package:flutter_conference/widget/header_grid_view.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,6 +38,8 @@ class MyState extends State<BookingPage> {
 
   List<int> _selectedSlotListId = new List();
 
+  List<FilledModel> _filledlist;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -46,6 +50,7 @@ class MyState extends State<BookingPage> {
 
   @override
   Widget build(BuildContext context) {
+    _bloc = Provider.of(context);
     return new Scaffold(
       appBar: new AppBar(
         title: new Text("Available Slot"),
@@ -59,9 +64,9 @@ class MyState extends State<BookingPage> {
               onTap: () {
                 if (_selectedSlotListId.isEmpty)
                   Scaffold.of(context).showSnackBar(new SnackBar(
-                        content: new Text("Please select a slot"),
-                        duration: new Duration(seconds: 1),
-                      ));
+                    content: new Text("Please select a slot"),
+                    duration: new Duration(seconds: 1),
+                  ));
                 else {
                   _selectedSlotListId.sort((a, b) => a.compareTo(b));
                   int tempId = _selectedSlotListId[0];
@@ -71,11 +76,11 @@ class MyState extends State<BookingPage> {
                       tempId = _selectedSlotListId[i];
                     } else {
                       Scaffold.of(context).showSnackBar(
-                            new SnackBar(
-                                content:
-                                    new Text("Slot(s) should be consecutive"),
-                                duration: new Duration(seconds: 1)),
-                          );
+                        new SnackBar(
+                            content:
+                            new Text("Slot(s) should be consecutive"),
+                            duration: new Duration(seconds: 1)),
+                      );
                       return;
                     }
                   }
@@ -96,10 +101,10 @@ class MyState extends State<BookingPage> {
                   showDialog(
                       context: context,
                       child: new BookingDialogWidget(
-                        starttext,
-                        endtext,
-                        _selectedSlotListId,
-                        selectedRoomId,
+                          starttext,
+                          endtext,
+                          _selectedSlotListId,
+                          selectedRoomId,
                           selectedRoomName,
                           widget.selectedTextDate
                       ));
@@ -113,22 +118,23 @@ class MyState extends State<BookingPage> {
         padding: const EdgeInsets.only(top: 4.0),
         child: (_roomlist != null)
             ? Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                    child: new Row(
-                      children: getRooms(_roomlist),
-                    ),
-                  ),
-                  Expanded(
-                    child: new GridView(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3, childAspectRatio: 2.5),
-                      children: getChildren(),
-                    ),
-                  )
-                ],
-                /*<Widget>[
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 8.0, right: 8.0),
+              child: new Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: getRooms(_roomlist),
+              ),
+            ),
+            Expanded(
+              child: new GridView(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, childAspectRatio: 2.5),
+                children: getChildren(),
+              ),
+            )
+          ],
+          /*<Widget>[
 
                 */ /*  new SliverGrid(
                       delegate: new Sli,
@@ -144,8 +150,8 @@ class MyState extends State<BookingPage> {
                           new SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 3))*/ /*
                 ],*/
-              )
-            : CircularProgressIndicator(),
+        )
+            : Center(child: CircularProgressIndicator()),
       ),
     );
   }
@@ -182,7 +188,7 @@ class MyState extends State<BookingPage> {
 
   getChildren() {
     return _slotlist.elementAt(selectedRoomIndex).map((slot) {
-      return new HeaderGridView(slot, onSlotSelect);
+      return new HeaderGridView(slot, onSlotSelect, _filledlist, selectedRoomId);
     }).toList();
   }
 
@@ -195,7 +201,9 @@ class MyState extends State<BookingPage> {
   }
 
   Future getSlots() async {
-    var response = await http.get("https://www.reweyou.in/test/test2.php");
+    Map<String, String> bodymap = new Map();
+    bodymap.putIfAbsent("date", () => _bloc.selectedDate);
+    var response = await http.post("https://www.reweyou.in/booking/fetchslots.php", body: bodymap);
     if (NetworkUtils.isReqSuccess(response: response)) {
       Map<CRModel, List<SlotBooking>> _dataList = new Map();
       Map<String, dynamic> map = json.decode(response.body);
@@ -224,9 +232,16 @@ class MyState extends State<BookingPage> {
         // _dataList.add(getGridWidget(slotList));
       });
 
+      List<FilledModel> filledList = new List();
+      List rawfilledList = map['filled'];
+      rawfilledList.forEach((item) {
+        filledList.add(FilledModel.fromJson(item));
+      });
+
       setState(() {
         _roomlist = _dataList.keys.toList();
         _slotlist = _dataList.values.toList();
+        _filledlist = filledList;
       });
 
       // slotListSink(_dataList);

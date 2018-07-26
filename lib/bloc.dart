@@ -10,6 +10,7 @@ import 'package:flutter_conference/header_widget.dart';
 import 'package:flutter_conference/utils/date_utils.dart';
 import 'package:flutter_conference/utils/network_utils.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Bloc {
   StreamController<DateTime> _dateController = new StreamController.broadcast();
@@ -21,6 +22,12 @@ class Bloc {
   List<CRModel> crDataList;
 
   String _selectedDate;
+
+  String username;
+
+  String get selectedDate {
+    return _selectedDate;
+  }
 
   Stream<DateTime> get date => _dateController.stream;
 
@@ -46,6 +53,9 @@ class Bloc {
   }
 
   Future initData() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    username = sharedPreferences.getString("username");
+
     Map<String, String> map = new Map();
     map.putIfAbsent("date", () => _selectedDate);
 
@@ -90,7 +100,7 @@ class Bloc {
             if (j == 0) _dataList.add(new HeaderWidget(crDataList[i].name));
 
             if (_slotList[j].roomId == crDataList[i].crId) {
-              _dataList.add(new BookingWidget(_slotList[j]));
+              _dataList.add(new BookingWidget(_slotList[j], username));
             }
           }
 
@@ -158,5 +168,18 @@ class Bloc {
         ),
       );
     }, childCount: 1));
+  }
+
+  Future deleteBooking(int id, String slotId, int roomId, date) async {
+    Map<String, String> map = new Map();
+    map.putIfAbsent("id", () => id.toString());
+    map.putIfAbsent("slotId", () => slotId.toString());
+    map.putIfAbsent("roomId", () => roomId.toString());
+    map.putIfAbsent("date", () => date.toString());
+
+    var response = await http.post("https://www.reweyou.in/booking/deletebooking.php", body: map);
+    if (NetworkUtils.isReqSuccess(response: response)) {
+      initData();
+    }
   }
 }
